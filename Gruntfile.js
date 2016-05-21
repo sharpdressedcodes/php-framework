@@ -24,6 +24,7 @@ module.exports = function (grunt) {
                     'src/vendor/bootstrap/js/bootstrap.js',
                     'src/vendor/website-connect/js/WebsiteConnect.js',
                     'src/vendor/website-connect/js/WebsiteConnect.Observable.js',
+                    'src/framework/Widget/AjaxLoader/View/js/WebsiteConnect.AjaxLoader.js',
                     'src/framework/Widget/AjaxSearchForm/View/js/WebsiteConnect.AjaxSearchForm.js',
                     'src/framework/Widget/AjaxTable/View/js/WebsiteConnect.AjaxTable.js'
                 ],

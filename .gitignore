@@ -2,8 +2,6 @@ Thumbs.db
 *.mp4
 *.webm
 *.ogg
-*.min.css
-*.min.js
 .idea
 node_modules
 !**/Config

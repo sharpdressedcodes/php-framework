@@ -25,33 +25,66 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 	private function _validateVars($vars){
 
 		$required = array(
-			'start',
-			'limit',
-			'sort',
-			'order'
+			'start' => '/^\d{1,4}$/',
+			'limit' => '/^\d{1,4}$/',
+			'sort' => '/^(user_id|(first|last)_name|role|department)$/i',
+			'order' => '/^((a|de)sc)$/i'
 		);
 
-		foreach ($required as $v) {
-			if (!array_key_exists($v, $vars) || is_null($vars[$v]) || $vars[$v] === ''){
-				return false;
+		foreach ($required as $k => $v) {
+
+			$tests = array(
+				array_key_exists($k, $vars),
+				!is_null($vars[$k]),
+				$vars[$k] !== '',
+				preg_match($v, $vars[$k], $matches)
+			);
+
+			foreach ($tests as $test) {
+				if (!$test){
+					return $k;
+				}
 			}
+
 		}
 
 		return true;
 
 	}
 
-	private function _buildUrl($vars){
+	private function _buildUrl($vars, $offendingKey){
 
-		return sprintf(
+		foreach ($vars as $k => $v) {
+			is_null($vars[$k]) && ($vars[$k] = '');
+		}
+
+		$url = sprintf(
 			'%s?action=user/view&start=%s&limit=%s&sort=%s&order=%s%s',
 			$_SERVER['PHP_SELF'],
-			is_null($vars['start']) || $vars['start'] === '' ? 0 : $vars['start'],
-			is_null($vars['limit']) || $vars['limit'] === '' ? $this->getConfig()['user']['maxRows'] : $vars['limit'],
-			is_null($vars['sort']) || $vars['sort'] === '' ? 'user_id' : $vars['sort'],
-			is_null($vars['order']) || $vars['order'] === '' ? 'asc' : $vars['order'],
+			$vars['start'],
+			$vars['limit'],
+			$vars['sort'],
+			$vars['order'],
 			is_null($vars['query']) || $vars['query'] === '' ? '' : '&query=' . $vars['query']
 		);
+
+		switch ($offendingKey){
+			case 'start':
+				$url = \WebsiteConnect\Framework\Utility\Url::replace($url, $offendingKey, 0);
+				break;
+			case 'limit':
+				$url = \WebsiteConnect\Framework\Utility\Url::replace($url, $offendingKey, $this->getConfig()['user']['maxRows']);
+				break;
+			case 'sort':
+				$url = \WebsiteConnect\Framework\Utility\Url::replace($url, $offendingKey, 'user_id');
+				break;
+			case 'order':
+				$url = \WebsiteConnect\Framework\Utility\Url::replace($url, $offendingKey, 'asc');
+				break;
+			default:
+		}
+
+		return $url;
 	}
 
 	public function runViewAction(){
@@ -68,10 +101,12 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 			'reset',
 			'action',
 		);
+		$allowedFields = $this->getConfig()['user']['allowedFields'];
 		$vars = self::getGetVars($varNames);
 
-		if (!$this->_validateVars($vars)){
-			$this->redirect($this->_buildUrl($vars));
+		$test = $this->_validateVars($vars);
+		if (is_string($test)){
+			$this->redirect($this->_buildUrl($vars, $test));
 			return;
 		}
 
@@ -106,7 +141,8 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 		$db = new \WebsiteConnect\Framework\Component\Database\Client($this->getConfig()['database']);
 
 		if (!$db->connect()){
-			$this->_sendError($csrf, "Can't connect to database.");
+			//$this->_sendError($csrf, "Can't connect to database.");
+			$this->_sendError($csrf, 'Database Error (0).');
 			return;
 		} else {
 
@@ -116,7 +152,8 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 			$foundCount = 0;
 
 			if (!is_array($descriptions)){
-				$this->_sendError($csrf, 'Unable to fetch data from database.');
+				//$this->_sendError($csrf, 'Unable to fetch descriptions from database.');
+				$this->_sendError($csrf, 'Database Error (1).');
 				return;
 			}
 
@@ -196,8 +233,6 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 						</button>';
 			$userData[] = $user;
 		}
-
-		$allowedFields = $this->getConfig()['user']['allowedFields'];
 
 		if ($vars['reset'] == 1 || strlen($query) === 0){
 			unset($_SESSION['query']);
@@ -327,6 +362,13 @@ class User extends \WebsiteConnect\Framework\Controller\Controller {
 				'startPage' => $paginationLoopVars['startPage'],
 				'endPage' => $paginationLoopVars['endPage'],
 				'json' => array_map(function($value){return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');}, $json),
+				'ajaxLoaderView' => 'ajax-loader',
+				'ajaxSearchFormView' => 'ajax-search-form',
+				'ajaxTableView' => 'ajax-table',
+				'dialogView' => 'bootstrap-dialog',
+				'dialogTitle' => 'User Information',
+				'dialogId' => 'user-modal',
+				'ajaxLoaderId' => 'user-ajax-loader',
 				'tableId' => 'user-table',
 				'paginationId' => 'user-pagination',
 				'searchFormId' => 'search-form',

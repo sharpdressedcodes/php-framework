@@ -5,7 +5,7 @@
 			<div class="page-header">
 				<h1>
 					Users
-					<span class="badge user-badge"><?php echo $viewParams['total']; ?></span>
+					<span class="badge user-badge"><?php echo $total; ?></span>
 				</h1>
 			</div>
 		</div>
@@ -13,14 +13,14 @@
 
 	<div class="row">
 		<div class="col-md-8">
-			<section id="user-errors-container"<?php if (count($viewParams['errorMessages']) > 0): ?> style="display: block;"<?php endif; ?>>
+			<section id="user-errors-container"<?php if (count($errorMessages) > 0): ?> style="display: block;"<?php endif; ?>>
 
 				<button type="button" class="close" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 
-				<?php if (count($viewParams['errorMessages']) > 0): ?>
-					<?php foreach ($viewParams['errorMessages'] as $message): ?>
+				<?php if (count($errorMessages) > 0): ?>
+					<?php foreach ($errorMessages as $message): ?>
 						<div class="user-error bg-danger">
 							<?php echo $message; ?>
 						</div>
@@ -40,20 +40,20 @@
 			<div id="search-container">
 				<?php $this->renderWidget(new \WebsiteConnect\Framework\Widget\AjaxSearchForm\Widget(array(
 					'controller' => $this,
-					'view' => 'ajax-search-form.php',
-					'action' => $viewParams['searchAction'],
-					'query' => $viewParams['query'],
-					'queryMax' => $viewParams['queryMax'],
-					'closeSearchUrl' => $viewParams['closeSearchUrl'],
-					'closeSearchText' => $viewParams['closeSearchText'],
-					'formId' => $viewParams['searchFormId'],
-					'closeId' => $viewParams['closeSearchId'],
-					'csrf' => $viewParams['csrf'],
-					'placeHolder' => $viewParams['searchPlaceHolder'],
-					'csrfName' => $viewParams['csrfName'],
-					'queryName' => $viewParams['queryName'],
-					'queryRegEx' => $viewParams['queryRegEx'],
-					'queryRegExMods' => $viewParams['queryRegExMods'],
+					'view' => $ajaxSearchFormView,
+					'action' => $searchAction,
+					'query' => $query,
+					'queryMax' => $queryMax,
+					'closeSearchUrl' => $closeSearchUrl,
+					'closeSearchText' => $closeSearchText,
+					'formId' => $searchFormId,
+					'closeId' => $closeSearchId,
+					'csrf' => $csrf,
+					'placeHolder' => $searchPlaceHolder,
+					'csrfName' => $csrfName,
+					'queryName' => $queryName,
+					'queryRegEx' => $queryRegEx,
+					'queryRegExMods' => $queryRegExMods,
 				))); ?>
 			</div>
 
@@ -63,14 +63,13 @@
 
 	<div class="row">
 		<div class="col-md-8">
-			<svg class="ajax-loader" width="120px" height="120px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
-				<rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect>
-				<circle cx="50" cy="50" r="40" stroke="#bbbbbb" fill="none" stroke-width="10" stroke-linecap="round"></circle>
-				<circle cx="50" cy="50" r="40" stroke="#337ab7" fill="none" stroke-width="6" stroke-linecap="round">
-					<animate attributeName="stroke-dashoffset" dur="2s" repeatCount="indefinite" from="0" to="502"></animate>
-					<animate attributeName="stroke-dasharray" dur="2s" repeatCount="indefinite" values="150.6 100.4;1 250;150.6 100.4"></animate>
-				</circle>
-			</svg>
+			<?php $this->renderWidget(new \WebsiteConnect\Framework\Widget\AjaxLoader\Widget(array(
+				'controller' => $this,
+				'view' => $ajaxLoaderView,
+				'backgroundColour' => '#bbbbbb',
+				'foreColour' => '#337ab7',
+				'id' => $ajaxLoaderId,
+			))); ?>
 		</div>
 		<div class="col-md-4"></div>
 	</div>
@@ -80,22 +79,22 @@
 			<section class="user-section">
 				<?php $this->renderWidget(new \WebsiteConnect\Framework\Widget\AjaxTable\Widget(array(
 					'controller' => $this,
-					'view' => 'ajax-table.php',
-					'data' => $viewParams['data'],
-					'total' => $viewParams['total'],
-					'start' => $viewParams['start'],
-					'limit' => $viewParams['limit'],
-					'allowedFields' => $viewParams['allowedFields'],
-					'sortUrlCallback' => $viewParams['sortUrlCallback'],
-					'paginationUrlCallback' => $viewParams['paginationUrlCallback'],
-					'startPage' => $viewParams['startPage'],
-					'endPage' => $viewParams['endPage'],
-					'json' => $viewParams['json'],
-					'tableId' => $viewParams['tableId'],
-					'paginationId' => $viewParams['paginationId'],
-					'current' => $viewParams['current'],
-					'pages' => $viewParams['pages'],
-					'maxPages' => $viewParams['maxPages'],
+					'view' => $ajaxTableView,
+					'data' => $data,
+					'total' => $total,
+					'start' => $start,
+					'limit' => $limit,
+					'allowedFields' => $allowedFields,
+					'sortUrlCallback' => $sortUrlCallback,
+					'paginationUrlCallback' => $paginationUrlCallback,
+					'startPage' => $startPage,
+					'endPage' => $endPage,
+					'json' => $json,
+					'tableId' => $tableId,
+					'paginationId' => $paginationId,
+					'current' => $current,
+					'pages' => $pages,
+					'maxPages' => $maxPages,
 				))); ?>
 			</section>
 		</div>
@@ -104,25 +103,12 @@
 
 </div>
 
-<div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="gridSystemModalLabel">User Information</h4>
-			</div>
-			<div class="modal-body">
-				<div class="row user-data-row">
-					<div class="col-md-4"></div>
-					<div class="col-md-8"></div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-			</div>
-		</div>
-	</div>
-</div>
+<?php $this->renderWidget(new \WebsiteConnect\Framework\Widget\BootstrapDialog\Widget(array(
+	'controller' => $this,
+	'view' => $dialogView,
+	'id' => $dialogId,
+	'title' => $dialogTitle,
+))); ?>
 
 <script>
 
@@ -132,43 +118,43 @@
 
 		var ajaxTable = null;
 		var ajaxSearchForm = null;
-		var $ajaxLoader = null;
+		var ajaxLoader = null;
+		var $modal = null;
 		var $errorsContainer = null;
 
 		window.addEventListener('load', onLoad, false);
 
 		function onLoad(){
 
+			$modal = $('#<?php echo $dialogId; ?>');
 			$errorsContainer = $('#user-errors-container');
-			$ajaxLoader = $('.user-container .ajax-loader');
-
-			$('.user-options').each(function(index, element){
-				$(element).on('click', showUserInformation);
-			});
 
 			$errorsContainer.find('.close').on('click', function(event){
 				$errorsContainer.slideUp();
 			});
 
-			$(document).ajaxSend(function(event, request, settings) {
-
-				if (settings.url.indexOf('action=user') > -1){
-					$errorsContainer.slideUp();
-					$ajaxLoader.fadeIn();
-				}
-
+			$('.user-options').each(function(index, element){
+				$(element).on('click', showUserInformation);
 			});
 
-			$(document).ajaxComplete(function(event, request, settings) {
-
-				if (settings.url.indexOf('action=user') > -1){
-					$ajaxLoader.fadeOut();
-				}
-
-			});
-
+			loadAjaxLoader();
 			loadAjaxSearchForm();
 			loadAjaxTable();
+
+		}
+
+		function loadAjaxLoader(){
+
+			ajaxLoader = new WebsiteConnect.widgets.AjaxLoader({
+				id: '<?php echo $ajaxLoaderId; ?>',
+				condition: function(settings){
+					return settings.url.indexOf('action=user') > -1;
+				}
+			});
+
+			ajaxLoader.on('show.before', function(data){
+				ajaxLoader.condition(data.settings) && $errorsContainer.slideUp();
+			});
 
 		}
 
@@ -236,7 +222,6 @@
 		function showUserInformation(event){
 
 			var json = null;
-			var $modal = $('#user-modal');
 			var $body = $modal.find('.modal-body');
 			var fragment = document.createDocumentFragment();
 
@@ -272,7 +257,7 @@
 
 		function updateUsers(data){
 
-			var $table = $('#<?php echo $viewParams['tableId']; ?>');
+			var $table = $(ajaxTable.table);
 			var $body = $table.find('tbody');
 			var bodyFragment = document.createDocumentFragment();
 			var allowedFields = data.allowedFields;
@@ -316,7 +301,7 @@
 
 			$('.user-badge').text(total);
 
-			total === 0 && onError('<?php echo $viewParams['noUsersMessage']; ?>');
+			total === 0 && onError('<?php echo $noUsersMessage; ?>');
 
 		}
 

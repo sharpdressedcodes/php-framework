@@ -31,7 +31,16 @@ abstract class Widget
 //		$dir = $this->_params['dir'];
 		extract($this->_params);
 
-		include $dir . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . $view;
+		$original = $dir . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . $view;
+		$file = $original;
+
+		!file_exists($file) && ($file .= '.php');
+
+		if (!file_exists($file)){
+			throw new \Exception("Can't find view {$original} for widget " . get_class($this) . ".");
+		} else {
+			include $file;
+		}
 
 	}
 
